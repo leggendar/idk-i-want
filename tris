@@ -1,0 +1,128 @@
+import java.util.Scanner;
+
+public class ForzaQuattro {
+    static final int ROWS = 6;
+    static final int COLS = 7;
+    static char[][] board = new char[ROWS][COLS];
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        initBoard();
+        int turn = 0;
+
+        while (true) {
+            printBoard();
+            char piece = (turn % 2 == 0) ? 'X' : 'O';
+            int player = (turn % 2) + 1;
+
+            System.out.print("Giocatore " + player + " (" + piece + "), scegli colonna (0-" + (COLS - 1) + "): ");
+            int col;
+
+            try {
+                col = scanner.nextInt();
+            } catch (Exception e) {
+                System.out.println("Input non valido.");
+                scanner.next(); // pulisce input
+                continue;
+            }
+
+            if (col < 0 || col >= COLS || !isValidMove(col)) {
+                System.out.println("Mossa non valida, riprova.");
+                continue;
+            }
+
+            int row = makeMove(col, piece);
+
+            if (checkWin(row, col, piece)) {
+                printBoard();
+                System.out.println("Giocatore " + player + " vince!");
+                break;
+            }
+
+            if (isDraw()) {
+                printBoard();
+                System.out.println("Pareggio!");
+                break;
+            }
+
+            turn++;
+        }
+
+        scanner.close();
+    }
+
+    static void initBoard() {
+        for (int r = 0; r < ROWS; r++) {
+            for (int c = 0; c < COLS; c++) {
+                board[r][c] = ' ';
+            }
+        }
+    }
+
+    static void printBoard() {
+        System.out.println();
+        for (int r = 0; r < ROWS; r++) {
+            System.out.print("|");
+            for (int c = 0; c < COLS; c++) {
+                System.out.print(board[r][c] + "|");
+            }
+            System.out.println();
+        }
+        System.out.print(" ");
+        for (int c = 0; c < COLS; c++) {
+            System.out.print(c + " ");
+        }
+        System.out.println("\n");
+    }
+
+    static boolean isValidMove(int col) {
+        return board[0][col] == ' ';
+    }
+
+    static int makeMove(int col, char piece) {
+        for (int r = ROWS - 1; r >= 0; r--) {
+            if (board[r][col] == ' ') {
+                board[r][col] = piece;
+                return r;
+            }
+        }
+        return -1;
+    }
+
+    static boolean checkWin(int row, int col, char piece) {
+        return checkDirection(row, col, piece, 1, 0)   // verticale
+            || checkDirection(row, col, piece, 0, 1)   // orizzontale
+            || checkDirection(row, col, piece, 1, 1)   // diagonale \
+            || checkDirection(row, col, piece, 1, -1); // diagonale /
+    }
+
+    static boolean checkDirection(int row, int col, char piece, int dr, int dc) {
+        int count = 1;
+
+        count += countPieces(row, col, piece, dr, dc);
+        count += countPieces(row, col, piece, -dr, -dc);
+
+        return count >= 4;
+    }
+
+    static int countPieces(int row, int col, char piece, int dr, int dc) {
+        int r = row + dr;
+        int c = col + dc;
+        int count = 0;
+
+        while (r >= 0 && r < ROWS && c >= 0 && c < COLS && board[r][c] == piece) {
+            count++;
+            r += dr;
+            c += dc;
+        }
+
+        return count;
+    }
+
+    static boolean isDraw() {
+        for (int c = 0; c < COLS; c++) {
+            if (board[0][c] == ' ') return false;
+        }
+        return true;
+    }
+}
